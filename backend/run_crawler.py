@@ -8,7 +8,7 @@ def save_data(data, keyword):
     os.makedirs("data", exist_ok=True)
     # Sanitize the keyword to create a safe filename
     keyword_safe = keyword.replace(" ", "_").replace("%20", "_")
-    filename = f"shopee_data_{keyword_safe}.json"
+    filename = f"lazada_data_{keyword_safe}.json"
     with open(f"data/{filename}", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
