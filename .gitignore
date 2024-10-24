@@ -170,3 +170,5 @@ data/
 .DS_Store
 
 mysql/
+
+env.ini
