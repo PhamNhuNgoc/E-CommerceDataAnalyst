@@ -1,7 +1,7 @@
 # data_extractor.py
 from selenium.webdriver.common.by import By
 
-def extract_products(driver):
+def extract_products(driver) -> list[dict]:
     product_list = []
     products = driver.find_elements(By.CLASS_NAME, 'Bm3ON')
 
