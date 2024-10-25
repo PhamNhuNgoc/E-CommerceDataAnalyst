@@ -1,7 +1,7 @@
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('env.ini')
 
 DRIVER_PATH = config['settings']['DRIVER_PATH']
 

@@ -1,13 +1,20 @@
 import os
-import json
+import sys
+from sqlite3 import IntegrityError
 import time
 import pandas as pd
 from selenium.webdriver.common.by import By
-from provider.lazada.schema import LAZADA_PRODUCTS_SCHEMA_MAPPING
-from setup_driver import setup_driver
 from sqlalchemy.orm import Session
-from database.connection import get_db
-from database.schema import Product
+from bs4 import BeautifulSoup
+
+# Path Append
+sys.path.append(os.path.abspath(os.curdir))
+
+
+from src.provider.lazada.schema import LAZADA_PRODUCTS_SCHEMA_MAPPING
+from src.setup_driver import setup_driver
+from src.database.connector import get_db
+from src.database.schema import Product
 
 def scrape_products(driver, keyword: str) -> list[dict]:
     """
@@ -57,8 +64,10 @@ def process_data(driver, products: list[dict]) -> pd.DataFrame:
     processed_data = []
     for item in products:
         driver.get(item['link'])
+        time.sleep(20)
         try:
-            item['average_score'] = driver.find_element(By.CLASS_NAME, 'average_score').text
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            item['average_score'] = soup.find('span', class_='score-average').text
             processed_data.append(item)
         except Exception as e:
             print(f"Error processing product page: {e}")
@@ -70,19 +79,24 @@ def process_data(driver, products: list[dict]) -> pd.DataFrame:
 
 def load_data_to_db(df: pd.DataFrame, db: Session):
     """
-    Load the processed data into the database.
+    Load the processed data into the database, only if the product doesn't already exist.
     """
     for _, row in df.iterrows():
-        product = Product(
-            name=row['product_name'],
-            price=row['product_price'],
-            link=row['product_url'],
-            average_score=row.get('average_rating', None)
-        )
-        db.add(product)
-    db.commit()
-    print("Data successfully loaded into the database.")
+    
+        product_data = row.to_dict()
+        existing_product = db.query(Product).filter(Product.link == product_data['link']).first()
 
+        if existing_product is None:
+            product = Product(**product_data)
+            db.add(product)
+        else:
+            print(f"Product with link '{product_data['link']}' already exists. Skipping...")
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        print("An error occurred while committing to the database.")
 
 
 def run_scraper():
@@ -104,3 +118,6 @@ def run_scraper():
 
     # Close the WebDriver
     driver.quit()
+
+if __name__ == "__main__":
+    run_scraper()
