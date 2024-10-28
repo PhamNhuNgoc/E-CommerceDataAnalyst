@@ -1,6 +1,13 @@
 LAZADA_PRODUCTS_SCHEMA_MAPPING = {
-    'name': 'product_name',
-    'price': 'product_price',
-    'link': 'product_url',
-    'average_score': 'average_rating'
+    'itemId': 'item_id',
+    'name': 'name',
+    'priceShow': 'price',
+    'itemUrl': 'url',
+    'ratingScore': 'rating',
+    'review': 'num_review',
+    'inStock': 'in_stock',
+    'brandName': 'brand',
+    'sellerName': 'seller',
+    'sellerId': 'seller_id',
+    'originalPrice': 'original_price',
 }
