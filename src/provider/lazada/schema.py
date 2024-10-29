@@ -10,4 +10,21 @@ LAZADA_PRODUCTS_SCHEMA_MAPPING = {
     'sellerName': 'seller',
     'sellerId': 'seller_id',
     'originalPrice': 'original_price',
+    # 'location': 'location',
+    # 'categories': 'categories',
+}
+
+LAZADA_REVIEWS_SCHEMA_MAPPING = {
+    'itemId': 'item_id',
+    'sellerId': 'seller_id',
+    'reviewRateId': 'review_rate_id',
+    'reviewType': 'review_type',
+    'boughtDate': 'bought_date',
+    'reviewStatus': 'review_status',
+    'reviewTitle': 'review_title',
+    'reviewContent': 'review_content',
+    'reviewContentList': 'review_content_list',
+    'reviewTime': 'review_time',
+    'buyerId': 'buyer_id',
+    'rating': 'rating',
 }

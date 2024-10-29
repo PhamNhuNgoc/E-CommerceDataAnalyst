@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.curdir))
 
 from endpoint import crud
 from endpoint.model import ProductModel
-from src.provider.lazada.schema import LAZADA_PRODUCTS_SCHEMA_MAPPING
+from src.provider.lazada.schema import LAZADA_PRODUCTS_SCHEMA_MAPPING, LAZADA_REVIEWS_SCHEMA_MAPPING
 from src.setup_driver import setup_driver
 from src.database.connector import SessionLocal
 from src.database.schema import Product
@@ -100,6 +100,25 @@ def get_products(driver, keyword: str) -> pd.DataFrame:
 #     df = df.rename(columns=LAZADA_PRODUCTS_SCHEMA_MAPPING)
 #     return df
 
+def get_reviews(driver, product_id: int) -> pd.DataFrame:
+    """
+    Scrape Lazada page and extract product reviews.
+    """
+    driver.get(f"https://my.lazada.vn/pdp/review/getReviewList?itemId={product_id}")
+    time.sleep(10)
+
+    json_element = driver.find_element(By.TAG_NAME, "pre")
+    json_data = json.loads(json_element.text).get('model').get('items')
+
+    review_list = []
+    for review in json_data:
+        filtered_data = {
+            new_key: review[old_key]
+            for old_key, new_key in LAZADA_REVIEWS_SCHEMA_MAPPING.items()
+            if old_key in review
+        }
+        review_list.append(filtered_data)
+    return pd.DataFrame(review_list)
 
 def load_data_to_db(df: pd.DataFrame, db: Session):
     """
