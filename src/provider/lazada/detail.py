@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 sys.path.append(os.path.abspath(os.curdir))
 
 
+from endpoint import crud
+from endpoint.model import ProductModel
 from src.provider.lazada.schema import LAZADA_PRODUCTS_SCHEMA_MAPPING
 from src.setup_driver import setup_driver
 from src.database.connector import SessionLocal
@@ -103,24 +105,14 @@ def load_data_to_db(df: pd.DataFrame, db: Session):
     """
     Load the processed data into the database, only if the product doesn't already exist.
     """
-    df.replace('', None, inplace=True)
+
     df = df.where(pd.notnull(df), None)
     for _, row in df.iterrows():
     
         product_data = row.to_dict()
-        existing_product = db.query(Product).filter(Product.item_id == product_data['item_id']).first()
-
-        if existing_product is None:
-            product = Product(**product_data)
-            db.add(product)
-        else:
-            print(f"Item with id '{product_data['item_id']}' already exists. Skipping...")
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        print("An error occurred while committing to the database.")
+        validated_data = ProductModel(**product_data)
+        
+        crud.upsert_item(db, validated_data)
 
 
 def run_scraper():
